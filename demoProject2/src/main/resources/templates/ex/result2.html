@@ -82,7 +82,7 @@
   <h2 th:text="#{app.name}">앱 이름</h2>
 
   <!-- 이미지 출력(static폴더 기준으로 경로 작성) -->
-  <img src="/images/logo.jpg">
+  <img src="/images/logo.gif">
 
   <hr>
 
@@ -94,6 +94,8 @@
   <img th:src="#{image.logo}">
   <img th:src="#{image.logo}">
   <img th:src="#{image.logo}">
-
+  
+  <!-- footer.html 파일을 해당 위치에 출력 -->
+  <th:block th:replace= "~{fragments/footer}"></th:block>
 </body>
 </html>
