@@ -48,6 +48,8 @@ public interface TodoListMapper {
 	 * @return result
 	 */
 	int todoDelete(int todoNo);
+
+	String searchTitle(int todoNo);
 	
 	
 	
