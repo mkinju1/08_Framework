@@ -168,6 +168,22 @@ function selectTodoList(){
       // a 요소를 todoTitle(td)요소 자식으로 추가
       todoTitle.append(a);
 
+      // a 요소가 클릭 되었을 때
+      a.addEventListener("click", e => {
+        // e : 이벤트 객체
+        // e.preventDefault() : 요소 기본 이벤트 막기
+        //  -> a태그의 클릭 이벤트를 막아버림
+        e.preventDefault();
+
+        // 할 일 상세조회 비동기 요청
+        // e.target.href : 클릭된 a태그의 href 속성 값 얻어오기
+        selectTodo(e.target.href);
+      });
+
+
+
+
+
       // 3) todoComplete가 들어갈 th 요소 생성
       const todoComplete = document.createElement("th");
       todoComplete.innerText
@@ -187,3 +203,264 @@ function selectTodoList(){
   })
   .catch( e => console.error(e) );
 }
+
+
+/* 페이지 로딩이 완료된 후 todo 제목(a태그) 클릭 막기 */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // DOMContentLoaded : 화면이 모두 로딩된 후
+
+  document.querySelectorAll("#tbody a").forEach((a) => {
+    // 매개변수 a : 반복마다 하나씩 요소가 꺼내져 저장되는 변수
+
+    // a 기본 이벤트 막고 selectTodo() 호출하게 하기
+    a.addEventListener("click", e => {
+      e.preventDefault(); 
+      selectTodo(e.target.href);
+    });
+  })
+});
+
+
+//---------------------------------------------------------
+/**
+ * 비동기로 할 일 상세 조회하여 팝업 레이어에 출력하기
+ * @param url : /todo/detail/10 형태
+ */
+function selectTodo(url){
+
+  fetch(url)
+  .then(response => {
+    if(response.ok){ // 요청/응답 성공 시
+
+      // response.json()
+      //  ->  reponse.text() + JSON.parse() 합친 메서드
+      //   (문자열 형태 변환)  (JSON -> JS Object 변환)
+      return response.json();
+    }
+
+    throw new Error("상세 조회 실패 : " + response.status);
+  })
+  .then(todo => {
+    console.log(todo);
+
+    /* 팝업 레이어에 조회된 todo 내용 추가하기 */
+    const popupTodoNo = document.querySelector("#popupTodoNo");
+    const popupTodoTitle = document.querySelector("#popupTodoTitle");
+    const popupComplete = document.querySelector("#popupComplete");
+    const popupRegDate = document.querySelector("#popupRegDate");
+    const popupTodoContent = document.querySelector("#popupTodoContent");
+    
+    // 완료 여부 - 0 == 'X', 1 == 'O'
+    popupComplete.innerText    = todo.todoComplete == 1 ? 'O' : 'X';
+
+    popupTodoNo.innerText      = todo.todoNo;
+    popupTodoTitle.innerText   = todo.todoTitle;
+    popupRegDate.innerText     = todo.regDate;
+    popupTodoContent.innerText = todo.todoDetail;
+
+
+    // 팝업 레이어 보이게 하기
+    // -> 클래스 중 popup-hidden 제거
+    document.querySelector("#popupLayer")
+              .classList.remove("popup-hidden");
+              
+  })
+  .catch( err => console.error(err) );
+}
+
+// 팝업 레이어 X 버튼 클릭 시 닫히게 만들기
+document.querySelector("#popupClose").addEventListener("click", () => {
+  document.querySelector("#popupLayer").classList.add("popup-hidden");      
+});
+
+
+// -----------------------------------------------
+
+/* 완료 여부 변경 버튼 클릭 시 */
+const changeComplete = document.querySelector("#changeComplete");
+
+changeComplete.addEventListener("click", () => {
+
+  // 팝업 레이어에 작성된 todoNo 내용 얻어오기
+  const todoNo 
+    = document.querySelector("#popupTodoNo").innerText;
+
+  
+
+ 
+  // 비동기로 완료 여부 변경
+
+  /* ajax(비동기) 요청 시 사용 가능한 데이터 전발 방식
+    (REST API와 관련됨)
+
+    GET    : 조회   (SELECT)
+    POST   : 삽입   (INSERT)
+    PUT    : 수정   (UPDATE)
+    DELETE : 삭제   (DELETE)
+  */
+  
+  fetch("/todo/todoComplete", {
+    method : "PUT", // PUT 방식 요청
+    headers : {"Content-Type" : "application/json"},
+    // 제출되는 데이터는 json 형태라고 정의
+    body : todoNo // todoNo 번호
+  })
+  .then(response => {
+    if(response.ok) return response.text();
+    throw new Error("완료 여부 변경 실패 : " + response.status)
+  })
+  .then(result => {
+    console.log(result);
+
+    // 완료 여부 span
+    const todoComplete = document.querySelector("#popupComplete");
+
+    // 팝업 레이어 완료 여부 부분 O <-> X 변경
+    todoComplete.innerText 
+      = (todoComplete.innerText == 'O') ? 'X' : 'O';
+
+    // 완료된 할 일 개수를 비동기로 조회하는 함수 호출
+    getCompleteCount();
+
+    // 할 일 목록을 비동기로 조회하는 함수 호출
+    selectTodoList();
+
+  })
+  .catch( err => console.error(err) );
+});
+
+
+// ----------------------------------------------------------
+
+/*  할 일 삭제 */
+const deleteBtn = document.querySelector("#deleteBtn");
+
+deleteBtn.addEventListener("click", () => {
+
+  if(!confirm("삭제할까요?")) return;
+
+  // 삭제할 할 일 번호 얻어오기
+  const todoNo 
+    = document.querySelector("#popupTodoNo").innerText;
+
+  
+  // 비동기로 삭제 요청 하기(DELETE 방식 요청)
+  fetch("/todo/todoDelete", {
+    method : "DELETE",
+    headers : {"Content-Type" : "application/json"},
+    body : todoNo
+  })
+  .then(response => {
+    if(response.ok) return response.text();
+    throw new Error("삭제 실패 : " + response.status);
+  })
+  .then(result => {
+    // 팝업 닫기
+    document.querySelector("#popupLayer")
+      .classList.add("popup-hidden");
+
+    // 전체 목록 수, 할 일 완료 개수, 할일 목록 다시 조회
+    getTotalCount();
+    getCompleteCount();
+    selectTodoList();
+  })
+  .catch( err => console.error(err) );
+
+});
+
+
+// -------------------------------------------------------
+
+// 수정 관련되 요소 얻어오기
+const popupLayer   = document.querySelector("#popupLayer");
+const updateLayer  = document.querySelector("#updateLayer");
+
+// 수정 레이어 열기
+const updateView   = document.querySelector("#updateView");
+
+// 수정 비동기 요청 버튼
+const updateBtn    = document.querySelector("#updateBtn");
+const updateCancel = document.querySelector("#updateCancel");
+
+
+// 수정 레이어 열기
+updateView.addEventListener("click", () => {
+  popupLayer.classList.add("popup-hidden"); // 팝업 숨기기
+  updateLayer.classList.remove("popup-hidden"); // 수정 레이어 보이기
+
+  // 상세 조회 제목/내용
+  const todoTitle = document.querySelector("#popupTodoTitle").innerText;
+  const todoContent = document.querySelector("#popupTodoContent").innerHTML;
+
+  // 수정 레이어 제목/내용 대입
+  document.querySelector("#updateTitle").value = todoTitle;
+ 
+  document.querySelector("#updateContent").value 
+    = todoContent.replaceAll("<br>", "\n"); // 줄바꿈 문자 변경
+
+
+  // 수정 버튼(#updateBtn)에 todoNo(pk) 넣기
+  // - dataset 속성 : 요소에 js에서 사용할 값(data)를 추가하는 속성
+  //  요소.dataset.속성명 = "값";  -> 대입
+  //  요소.dataset.속성명;         -> 값 얻어오기
+  updateBtn.dataset.todoNo = 
+    document.querySelector("#popupTodoNo").innerText;
+})
+
+
+// 수정 취소 시
+updateCancel.addEventListener("click", () => {
+  popupLayer.classList.remove("popup-hidden"); // 팝업 보이기
+  updateLayer.classList.add("popup-hidden"); // 수정 레이어 숨기기
+});
+
+
+// 수정 버튼(#updateBtn) 클릭 시
+updateBtn.addEventListener("click", () => {
+
+  // 서버로 제출 되어야 하는 값을 JS 객체로 형태로 묶기
+  const obj = {}; // 빈 객체 생성
+
+               // 버튼에 dataset 값 얻어오기
+  obj.todoNo = updateBtn.dataset.todoNo; 
+  obj.todoTitle = document.querySelector("#updateTitle").value;
+  obj.todoDetail = document.querySelector("#updateContent").value;
+  console.log(obj);
+
+
+  // 비동기로 할 일 수정 요청
+  fetch("/todo/todoUpdate", {
+    method : "PUT",
+    headers : {"Content-Type" : "application/json"},
+    body : JSON.stringify(obj)
+    //  obj 객체를 JSON 문자열 형태로 변환해서 제출
+  })
+  .then(response => {
+    if(response.ok) return response.text();
+    throw new Error("수정 실패 : " + response.status);
+  })
+  .then(result => {
+    console.log(result); // 1/0
+
+    if(result > 0){ // 수정 성공
+      alert("수정 성공!");
+      
+      // 수정 레이어 숨기기
+      updateLayer.classList.add("popup-hidden");
+
+      // 상세 조회(팝업 레이어 같이 열림) 함수 호출
+      selectTodo("/todo/detail/" + updateBtn.dataset.todoNo);
+
+      // 목록 조회 다시
+      selectTodoList();
+
+
+    } else { // 실패
+      alert("수정 실패ㅜㅜ");
+    }
+
+  })
+  .catch( err => console.error(err) );
+
+
+});

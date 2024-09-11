@@ -95,5 +95,3 @@ public class TodoListServiceImpl implements TodoListService{
 		return mapper.selectTodoList();
 	}
 }
-
-

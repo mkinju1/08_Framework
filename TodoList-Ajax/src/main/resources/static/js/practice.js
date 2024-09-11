@@ -72,8 +72,6 @@ searchBtn2.addEventListener("click", () => {
     createLi("todoDetail");
     createLi("todoComplete");
 
-
-
   })
   .catch(e => console.error(e));
 

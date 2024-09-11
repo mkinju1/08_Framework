@@ -4,8 +4,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -173,8 +176,52 @@ public class TodoAjaxController {
 	}
 	
 	
+	/** 할 일 상세 조회
+	 * @param todoNo
+	 * @return
+	 */
+	@ResponseBody
+	@GetMapping("detail/{todoNo}")
+	public Todo selectTodo(@PathVariable("todoNo") int todoNo) {
+		return service.todoDetail(todoNo);
+	}
 	
 	
+	/** 할 일 완료 여부 수정
+	 * @param todoNo
+	 * @return result
+	 */
+	@ResponseBody
+	@PutMapping("todoComplete")
+	public int todoComplete(@RequestBody int todoNo) {
+		
+		return service.todoComplete(todoNo);
+	}
+	
+	
+	
+	
+	/** 할 일 삭제
+	 * @param todoNo
+	 * @return result
+	 */
+	@ResponseBody
+	@DeleteMapping("todoDelete")
+	public int todoDelete(@RequestBody int todoNo) {
+		return service.todoDelete(todoNo);
+	}
+	
+	
+	
+	/** 할 일 수정
+	 * @param todo : JSON데이터가 변환되어 필드에 값에 대입된 객체
+	 * @return result
+	 */
+	@ResponseBody
+	@PutMapping("todoUpdate")
+	public int todoUpdate(@RequestBody Todo todo) {
+		return service.todoUpdate(todo);
+	}
 	
 	
 	
