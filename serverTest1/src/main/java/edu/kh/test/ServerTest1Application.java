@@ -1,13 +1,13 @@
-package edu.kh.demo;
+package edu.kh.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DemoProject3Application {
+public class ServerTest1Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DemoProject3Application.class, args);
+		SpringApplication.run(ServerTest1Application.class, args);
 	}
 
 }

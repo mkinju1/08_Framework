@@ -1,0 +1,193 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>	
+   <h1>학생 조회</h1>
+   <form action="/student/select" method="POST">
+    이름 : <input type="text" name="name"> <br>
+    나이 : <input type="number" name="age"> <br>
+    주소 : <input type="text" name="addr"> <br>
+    <button>제출하기</button>
+  </form>	
+</body>
+</html>-->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <h1>학생 조회</h1>
+  <form action="/student/select" method="POST">
+    이름 : <input type="text" name="stdName"> <br>
+    나이 : <input type="number" name="stdAge"> <br>
+    주소 : <input type="text" name="stdAddress"> <br>
+    <button>제출하기</button>
+  </form>
+</body>
+</html>
+
+
+
+<!--
+
+ 원인 1: StudentController의 URL mapping 이 올바르지 않음
+ @PostMapping("select")로 상대 경로를 사용
+ model.addAttribute("stdName", student.getStdName()), model.addAttribute("stdAge", student.getStdAge()), 
+ model.addAttribute("stdAddress", student.getStdAddress())로
+  속성 이름을 사용
+
+
+
+조치 1 @Controller 어노테이션 추가해서 이 클래스를 컨트롤러로 인식하게
+
+@PostMapping("/student/select")로 절대 경로를 사용하여 요청 경로를 명확하게 지정
+
+model.addAttribute("name", student.getStdName()), model.addAttribute("age", student.getStdAge()), 
+model.addAttribute("address", student.getStdAddress())
+로 속성 이름을 변경
+
+
+코드 수정
+
+package edu.kh.test.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import edu.kh.test.dto.Student;
+
+import org.springframework.ui.Model;
+
+@Controller
+public class StudentController {
+
+    @PostMapping("/student/select")
+    public String selectStudent(Model model, @ModelAttribute Student student) {
+        model.addAttribute("name", student.getStdName());
+        model.addAttribute("age", student.getStdAge());
+        model.addAttribute("address", student.getStdAddress());
+        return "student/select";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+원인 2: index.html의 action 속성 오류
+문제: index.html의 폼 action 속성이 요청 경로와 일치하지 않아,
+ 요청이 올바른 컨트롤러 메서드로 전달되지 않음
+
+
+
+조치 2 HTML 폼의 action 속성을 "/student/select"로 
+설정하여 올바른 URL로 제출하도록 수정함.
+
+코드 수정
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>학생 조회</h1>
+    <form action="/student/select" method="POST">
+        이름 : <input type="text" name="name"> <br>
+        나이 : <input type="number" name="age"> <br>
+        주소 : <input type="text" name="addr"> <br>
+        <button>제출하기</button>
+    </form>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+원인 3 : select.html에서 Thymeleaf 변수 이름 불일치
+
+ select.html에서 Thymeleaf 템플릿의 변수 이름이 
+StudentController에서 모델에 추가한 변수와 일치하지 않음
+
+
+
+조치 3
+템플릿에서 사용하는 변수 이름을 컨트롤러에서 모델에 추가한 이름과 일치하도록 수정함
+ 변수 이름을 name, age, address로 맞추어야 함.
+
+
+코드 수정
+
+ <!DOCTYPE html>
+ <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Document</title>
+ </head>
+ <body>
+     <h1>조회 결과</h1>
+     <h4 th:text="|${name} 님|"></h4>   
+     <h4 th:text="|${age}세|"></h4>
+     <h4 th:text="|주소 : ${adress}|"></h4>  
+ </body>
+ </html>
+
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
